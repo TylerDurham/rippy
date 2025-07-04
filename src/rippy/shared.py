@@ -1,12 +1,14 @@
 import os
 from collections import namedtuple
 
-
+APP_NAME = "rippy"
 HOME_DIR = os.path.expanduser("~")
-ROOT_DIR = os.path.join(HOME_DIR, "Rippy") 
-IMPORT_DIR = os.path.join(ROOT_DIR, "@import")
-MOVIES_DIR = os.path.join(ROOT_DIR, "movies")
-TV_SHOWS_DIR = os.path.join(ROOT_DIR, "tv-shows")
+CONFIG_DIR = os.path.join(HOME_DIR, f".config/{APP_NAME}")
+CONFIG_FILE = os.path.join(CONFIG_DIR, f"{APP_NAME}.toml")
+RIPPY_DIR = os.path.join(HOME_DIR, APP_NAME.capitalize()) 
+IMPORT_DIR = os.path.join(RIPPY_DIR, "@import")
+MOVIES_DIR = os.path.join(RIPPY_DIR, "movies")
+TV_SHOWS_DIR = os.path.join(RIPPY_DIR, "tv-shows")
 
 PathInfo = namedtuple("PathInfo", ["name", "description", "path"])
 
@@ -26,7 +28,7 @@ class Paths():
         self._rippydir = PathInfo(
             name="RIPPY_DIR", 
             description="The path to the 💯 rippy directory.", 
-            path=ROOT_DIR
+            path=RIPPY_DIR
         )
 
         self._import_dir = PathInfo(
@@ -53,7 +55,7 @@ class Paths():
 
 paths = [
     PathInfo(name="HOME_DIR", description="The path to the current user's 🏡 home directory", path=HOME_DIR),
-    PathInfo(name="RIPPY_DIR", description="The path the the 💯 rippy directory.", path=ROOT_DIR),
+    PathInfo(name="RIPPY_DIR", description="The path the the 💯 rippy directory.", path=RIPPY_DIR),
     PathInfo(name="IMPORT_DIR", description="The path to the import directory.", path=IMPORT_DIR),
     PathInfo(name="MOVIES_DIR", description="The path to the 🎬 movies directory.", path=MOVIES_DIR),
     PathInfo(name="TV_SHOWS_DIR", description="The path to the 📺 tv shows directory.", path=TV_SHOWS_DIR)

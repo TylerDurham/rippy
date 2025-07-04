@@ -1,5 +1,7 @@
 import typer
-from rippy import new, config
+# from rippy import new, config
+
+from rippy.commands import config, new
 from rich.console import Console
 console = Console()
 
