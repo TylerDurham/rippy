@@ -25,9 +25,9 @@ def init():
     can_write = True
     overwrite: str = "no"
 
-    if os.path.exists(cfg.CONFIG_FILE):
+    if os.path.exists(cfg.CONFIG_FILE_PATH):
         overwrite = Prompt.ask(
-            f"{cfg.CONFIG_FILE} exists. Overwrite?", 
+            f"{cfg.CONFIG_FILE_PATH} exists. Overwrite?", 
             choices=[PROMPT_YES, PROMPT_NO], 
             default=PROMPT_NO)
 
@@ -36,7 +36,7 @@ def init():
 
     if can_write:
         cfg.write_file(cfg_data, overwrite=True)
-        console.print("Config written.")
+        console.print(f"Config written to {cfg.CONFIG_FILE_PATH}.")
 
     else:
         console.print("Nothing written.")
