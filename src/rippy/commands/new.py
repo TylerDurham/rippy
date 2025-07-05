@@ -1,9 +1,10 @@
 import typer
 import makemkv
-from rippy import search
+from rippy.core import search, config as cfg
 import rich.console
 from rich.prompt import Prompt
 import rich.progress
+import rich.text
 import rich.table
 
 app = typer.Typer()
@@ -28,11 +29,25 @@ def movie(movie_title: str = "", disc: int = 0, min_length: int = 3600):
         default="yes"
     )
 
+    rc = cfg.read_file(cfg.CONFIG_FILE_PATH)
+    # console.print(rc)
+    # TODO: Do a check to ensure API_KEY has been set.
+    # if not rc.has_api_key():
+        # console.print("WARNING! No API_KEY in config.")
+        
 
-    movies = search.find_movies(str(movie_title)) 
+    movies = search.search_movies(str(movie_title), rc.core.api_key) 
     do_print_movie_metadata(movies)
+
+    selected_id = ""
     if answer == "yes":
                 selected_id = Prompt.ask("Please enter the id of the movie that best matches.", choices=[str(n) for n in range(1, len(movies))])
+
+    id = movies[int(selected_id) - 1]["id"]
+
+
+    movie = search.get_movie(id, rc.core.api_key)
+    console.print(movie)
         
 
 @app.command(name="tv-show")
@@ -65,18 +80,23 @@ def do_print_movie_metadata(movies):
     """
     Prints a table of movies found during a metadata search.
     """
-    table = rich.table.Table("ID", "Title", "Year", "Popularity", "Desciption")
+    table = rich.table.Table("ID", "Title", "Popularity", "Desciption", border_style="none")
     count = 0
     for movie in movies:
         count = count + 1
+        year = movie["release_date"][0:4]
+        title = f"{movie["title"]} ({year})"
+        url = f'https://www.themoviedb.org/movie/{movie["id"]}'
+        link = f"🌐More info: [link={url}][bold blue]{url}[/bold blue][/ link]" 
+        popularity = movie["popularity"]
         table.add_row(
             str(count), 
-            movie["title"], 
-            movie["release_date"][:4], 
-            str(movie["popularity"]),
-            f'{movie["overview"][:64]}...\n'
+            title, 
+            f"{popularity}",
+            f'{movie["overview"][:128]}...\n\n{link}\n'
         )
 
+    console.print("🌐'Shift' click [bold blue] links[/bold blue] to view in web browser.")
     console.print(table)
     
 def do_select_movie_metadata():
