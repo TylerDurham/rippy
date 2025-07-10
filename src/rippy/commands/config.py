@@ -43,7 +43,7 @@ def init():
             can_write = False
 
     if can_write:
-        cfg.write_file(cfg_data, overwrite=True)
+        cfg.write_config(cfg_data, overwrite=True)
 
         # TODO: Move styles and icons to seperate module
         console.print(f"\n✅ Config written to [bold blue]{DEFAULTS.CONFIG_FILE_PATH}[/bold blue].")
@@ -57,7 +57,7 @@ def get(key: str):
     Gets the config value with the specified key.
     """
 
-    root = cfg.read_file()
+    root = cfg.read_config()
     console.print(getattr(root, key))
 
 @app.command(name="set")
@@ -72,9 +72,9 @@ def set(key: str, value: str = ""):
     if key == "api_key":
         value = Prompt.ask("Enter your API key", password=True)
 
-    root = cfg.read_file()
+    root = cfg.read_config()
     setattr(root, key, value)
-    cfg.write_file(root, True)
+    cfg.write_config(root, True)
         
 if __name__ == "__main__":
     app()
