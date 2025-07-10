@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "makemkv>=0.3.1",
+    "pydantic>=2.11.7",
     "requests>=2.32.4",
     "tomlkit>=0.13.3",
     "typer>=0.16.0",
