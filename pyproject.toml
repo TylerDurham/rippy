@@ -1,0 +1,43 @@
+[project]
+name = "rippy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "makemkv>=0.3.1",
+    "requests>=2.32.4",
+    "tomlkit>=0.13.3",
+    "typer>=0.16.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[dependency-groups]
+dev = [
+    "bumpver>=2024.1130",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+]
+
+[tool.uv]
+package = true
+
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+#
+# [tool.pytest.ini_options]
+# minversion = "6.0"
+# addopts = "-ra -q"
+# testpaths = [
+#     "tests",
+# ]
+
+[project.scripts]
+rippy = "rippy:main"
