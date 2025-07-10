@@ -36,6 +36,7 @@ def test_write_and_read(api_key, my_temp_dir):
         expected = RippyConfig()
         expected.core.api_key = api_key
         expected.core.rip_dir = os.path.join(my_temp_dir, DEFAULTS.APP_NAME)
+        
 
         # ... write to disk
         logger.debug(expected)

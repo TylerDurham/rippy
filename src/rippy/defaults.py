@@ -20,6 +20,7 @@ class RippyDefaults():
     __TV_SHOWS_DIR = os.path.join(__RIP_DIR, "tv-shows")
     __IMPORT_DIR = os.path.join(__RIP_DIR, "@import")
     __MOVIE_MIN_TITLE_LENGTH = 360
+    __TV_SHOWS_MIN_EPISODE_LENGTH = 360 
 
     @property
     def APP_NAME(self) -> str:
@@ -67,9 +68,12 @@ class RippyDefaults():
         return self.__IMPORT_DIR
 
     @property
+    def TV_SHOWS_MIN_EPISODE_LENGTH(self):
+        return self.__TV_SHOWS_MIN_EPISODE_LENGTH
+
+    @property
     def MOVIE_MIN_TITLE_LENGTH(self) -> int:
         return self.__MOVIE_MIN_TITLE_LENGTH
-
     def get_metadata(self):
         
         infos = []

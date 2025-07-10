@@ -26,8 +26,17 @@ class RippySettings:
     rip_dir: str = DEFAULTS.APP_DIR
 
 @dc.dataclass 
-class MakeMKVSettings():
+class MakeMKVMovieSettings():
     min_title_length: int = DEFAULTS.MOVIE_MIN_TITLE_LENGTH
+
+@dc.dataclass 
+class MakeMKVTVShowSettings():
+    min_title_length: int = DEFAULTS.MOVIE_MIN_TITLE_LENGTH
+
+@dc.dataclass 
+class MakeMKVSettings():
+    movie: MakeMKVMovieSettings = dc.field(default_factory=MakeMKVMovieSettings)
+    tv: MakeMKVTVShowSettings = dc.field(default_factory=MakeMKVTVShowSettings)
 
 @dc.dataclass 
 class RippyConfig:
