@@ -1,14 +1,17 @@
-import typer
-from rich.prompt import Prompt
-from rippy import config as cfg
-from rippy.defaults import get_defaults 
-from rich.console import Console
 import os
+
+import typer
+from rich.console import Console
+from rich.prompt import Prompt
+
+from rippy import config as cfg
+from rippy.defaults import get_defaults
 
 app = typer.Typer()
 
 console = Console()
 DEFAULTS = get_defaults()
+
 
 @app.command(name="init")
 def init():
@@ -18,25 +21,30 @@ def init():
     PROMPT_YES = "y"
     PROMPT_NO = "n"
 
-    rippy_dir = Prompt.ask(f"Specify the path to the [bold blue]{DEFAULTS.APP_NAME.capitalize()}[/bold blue] directory", default=DEFAULTS.APP_DIR)
-    api_key = Prompt.ask("Specify [bold blue]themoviedb.org api key[/bold blue] (required for metadata search)", password=True)
-
-
+    rippy_dir = Prompt.ask(
+        f"Specify the path to the [bold blue]{DEFAULTS.APP_NAME.capitalize()}[/bold blue] directory",
+        default=DEFAULTS.APP_DIR,
+    )
+    api_key = Prompt.ask(
+        "Specify [bold blue]themoviedb.org api key[/bold blue] (required for metadata search)",
+        password=True,
+    )
 
     cfg_data = cfg.RippyConfig()
     cfg_data.core.api_key = api_key
     cfg_data.core.rip_dir = rippy_dir
-    cfg_data.makemkv.min_title_length = 386
+    cfg_data.makemkv.movie.min_title_length = 386
 
-    can_write = True # Assume we can write the config file
-    overwrite: str = "no" # Assume user does NOT want to overrite the config file
+    can_write = True  # Assume we can write the config file
+    overwrite: str = "no"  # Assume user does NOT want to overrite the config file
 
     # If the file exists, ask the user if they wish to overwrite.
     if os.path.exists(DEFAULTS.CONFIG_FILE_PATH):
         overwrite = Prompt.ask(
-            f"{DEFAULTS.CONFIG_FILE_PATH} exists. Overwrite?", 
-            choices=[PROMPT_YES, PROMPT_NO], 
-            default=PROMPT_NO)
+            f"{DEFAULTS.CONFIG_FILE_PATH} exists. Overwrite?",
+            choices=[PROMPT_YES, PROMPT_NO],
+            default=PROMPT_NO,
+        )
 
         if overwrite == PROMPT_NO:
             # The user does NOT wish to overwrite.
@@ -46,10 +54,13 @@ def init():
         cfg.write_config(cfg_data, overwrite=True)
 
         # TODO: Move styles and icons to seperate module
-        console.print(f"\n✅ Config written to [bold blue]{DEFAULTS.CONFIG_FILE_PATH}[/bold blue].")
+        console.print(
+            f"\n✅ Config written to [bold blue]{DEFAULTS.CONFIG_FILE_PATH}[/bold blue]."
+        )
 
     else:
         console.print("\n🛑 Nothing written.")
+
 
 @app.command(name="get")
 def get(key: str):
@@ -59,6 +70,7 @@ def get(key: str):
 
     root = cfg.read_config()
     console.print(getattr(root, key))
+
 
 @app.command(name="set")
 def set(key: str, value: str = ""):
@@ -75,6 +87,7 @@ def set(key: str, value: str = ""):
     root = cfg.read_config()
     setattr(root, key, value)
     cfg.write_config(root, True)
-        
+
+
 if __name__ == "__main__":
     app()
