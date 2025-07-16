@@ -3,12 +3,7 @@ import tomlkit as tk
 from pathlib import Path
 import os
 
-# APP_NAME = "rippy" # The name of the app.
-# HOME_DIR = os.path.expanduser("~") # Path to the user's home directory.'
-# CONFIG_DIR = os.path.join(HOME_DIR, f".config/{APP_NAME}") # Path to the config directory.
-# CONFIG_FILE = f"{APP_NAME}.toml" # The name of the config file.
-# CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE) # The full path to the config file.
-# RIP_DIR = os.path.join(HOME_DIR, APP_NAME.capitalize()) # The root app directory.
+#  = os.path.join(HOME_DIR, APP_NAME.capitalize()) # The root app directory.
 # IMPORT_DIR = os.path.join(RIP_DIR, "@import") # The path to where MKVs are imported.
 # MOVIES_DIR = os.path.join(RIP_DIR, "movies") # The path where movies are converted. presumably by Handbrake.
 # TV_SHOWS_DIR = os.path.join(RIP_DIR, "tv-shows") # The path where TV shows are converted, presumably by Handbrake
