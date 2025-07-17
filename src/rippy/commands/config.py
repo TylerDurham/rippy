@@ -1,80 +1,61 @@
-import typer
-from rich.prompt import Prompt
-from rippy import config as cfg
-from rippy.defaults import get_defaults 
-from rich.console import Console
-import os
+import typer as t 
+from typing import Annotated, List 
 
-app = typer.Typer()
+app = t.Typer()
 
-console = Console()
-DEFAULTS = get_defaults()
+def complete_section(): 
+    return ["rippy", "rippy.movie", "rippy.tv-show"]
 
-@app.command(name="init")
-def init():
+@app.command("list")
+def list():
+    pass
+
+
+OPT_SECTION = Annotated[
+    str,
+    t.Argument(
+        help="The section name of the property.",
+        autocompletion=complete_section
+    )
+]
+
+OPT_NAME = Annotated[
+    str,
+    t.Argument(
+        help="The name of the property."
+    )
+]
+
+OPT_VALUE = Annotated[
+    str,
+    t.Argument(
+        help="The value of the property."
+    )
+]
+
+@app.command("get")
+def get(
+    section: Annotated[
+        str,
+        t.Argument(help="{help tbd}", autocompletion=complete_section)
+    ] = "{default}",
+    name: Annotated[
+        str,
+        t.Argument(help="{help tbd}")
+    ] = "{default}"
+):
     """
-    Initialize configuration with defaults.
-    """
-    PROMPT_YES = "y"
-    PROMPT_NO = "n"
-
-    rippy_dir = Prompt.ask(f"Specify the path to the [bold blue]{DEFAULTS.APP_NAME.capitalize()}[/bold blue] directory", default=DEFAULTS.APP_DIR)
-    api_key = Prompt.ask("Specify [bold blue]themoviedb.org api key[/bold blue] (required for metadata search)", password=True)
-
-
-
-    cfg_data = cfg.RippyConfig()
-    cfg_data.core.api_key = api_key
-    cfg_data.core.rip_dir = rippy_dir
-    cfg_data.makemkv.min_title_length = 386
-
-    can_write = True # Assume we can write the config file
-    overwrite: str = "no" # Assume user does NOT want to overrite the config file
-
-    # If the file exists, ask the user if they wish to overwrite.
-    if os.path.exists(DEFAULTS.CONFIG_FILE_PATH):
-        overwrite = Prompt.ask(
-            f"{DEFAULTS.CONFIG_FILE_PATH} exists. Overwrite?", 
-            choices=[PROMPT_YES, PROMPT_NO], 
-            default=PROMPT_NO)
-
-        if overwrite == PROMPT_NO:
-            # The user does NOT wish to overwrite.
-            can_write = False
-
-    if can_write:
-        cfg.write_config(cfg_data, overwrite=True)
-
-        # TODO: Move styles and icons to seperate module
-        console.print(f"\n✅ Config written to [bold blue]{DEFAULTS.CONFIG_FILE_PATH}[/bold blue].")
-
-    else:
-        console.print("\n🛑 Nothing written.")
-
-@app.command(name="get")
-def get(key: str):
-    """
-    Gets the config value with the specified key.
+    Gets the value for a config option.
     """
 
-    root = cfg.read_config()
-    console.print(getattr(root, key))
+    print(f"section: {section} name: {name}") 
 
-@app.command(name="set")
-def set(key: str, value: str = ""):
+@app.command("set")
+def set(section: OPT_SECTION, name: OPT_NAME, value: OPT_VALUE):
     """
-    Sets the config value with the specified key.
-
-    IMPORTANT
-    If you are trying to set 'api_key', you will be prompted for the value to keep the secret out of your shell history.
+    Sets the value for a config option.
     """
+    print(f"section: {section} name: {name} value: {value}") 
 
-    if key == "api_key":
-        value = Prompt.ask("Enter your API key", password=True)
-
-    root = cfg.read_config()
-    setattr(root, key, value)
-    cfg.write_config(root, True)
-        
 if __name__ == "__main__":
     app()
