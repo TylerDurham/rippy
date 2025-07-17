@@ -1,5 +1,6 @@
 from typing import Annotated
 import typer as t 
+import rippy.commands.errors as e
 
 app = t.Typer()
 
@@ -22,8 +23,7 @@ def init(
     """
     Initializes a new {app_name} directory for a movie or TV show.
     """
-    
-    # Sanity check inputs
+
     check_inputs(title, read, search)
 
     print(f"type: {type}")
@@ -34,11 +34,10 @@ def init(
 def check_inputs(title: str, read: bool, search: bool):
 
     if len(title) > 0 and read:
-        raise ValueError("Invalid input: title should not be used with read.")
+        raise e.E_INIT_TITLE_WITH_READ()
 
     if len(title) == 0 and search and not read:
-        raise ValueError("Invalid input: `--search` should be used with either `title` or `--read`.")
-
+        raise e.E_INIT_SEARCH_NO_READ_OR_TITLE() 
 
 if __name__ == "__main__":
     app()
