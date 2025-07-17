@@ -14,6 +14,10 @@ def test_movie_arg_errors():
     with pytest.raises(ValueError):
         init(search=True) # Cannot search without a title or -r flag
 
-    logger.debug(f"OK! rippy init -s raised ValueError")
+    logger.debug(f"OK! rippy init (no args) raised ValueError")
 
+    with pytest.raises(ValueError):
+        init() # no inputs
+
+    logger.debug(f"OK! rippy init -s raised ValueError")
 

@@ -33,6 +33,9 @@ def init(
 
 def check_inputs(title: str, read: bool, search: bool):
 
+    if len(title) == 0 and not read and not search:
+        raise e.E_NO_ARGS()
+
     if len(title) > 0 and read:
         raise e.E_INIT_TITLE_WITH_READ()
 
