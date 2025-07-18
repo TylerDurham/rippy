@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Annotated
 
 import typer as t
@@ -6,10 +7,19 @@ import rippy.commands.errors as e
 
 app = t.Typer()
 
+class InitType(str, Enum):
+    movie = "movie"
+    tv_show = "tv-show"
 
 @app.command(name="init")
 def init(
-    type: str = "movie",
+    type: Annotated[
+        InitType,
+        t.Argument(
+            help=f"The type of initialization to perform. Either a `{InitType.movie}` or `{InitType.tv_show}`"
+        )
+    ] = InitType.movie,
+
     title: Annotated[
         str,
         t.Argument(

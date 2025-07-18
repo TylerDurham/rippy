@@ -1,27 +1,54 @@
 import logging
 from re import DEBUG
 
+from typing import List
+
 import pytest
 
-from rippy.commands.init import init
+from rippy.commands.init import app
+
+from typer.testing import CliRunner
 
 logger = logging.getLogger(__name__)
 
+@pytest.mark.cli
+def test_movie():
 
+    runner = CliRunner()
+    actual = runner.invoke(app, ["movie", "Fear", "--search"])
+    assert actual.exit_code == 0, f"Expected {actual.exit_code} to be 0!"
+
+
+    # init("movie", "Fear", search=True)
+    # init("movie", read=True)
+
+@pytest.mark.cli
 def test_movie_arg_errors():
-    with pytest.raises(ValueError):
-        init(
-            "movie", "Fear", read=True
-        )  # No need to pass in title when -r is specified.
 
-    logger.debug(f"OK! rippy init 'Fear' -r raised ValueError")
+    runner = CliRunner()
 
-    with pytest.raises(ValueError):
-        init(search=True)  # Cannot search without a title or -r flag
+    inputs = ["movie", "Fear", "--read"]
+    assert_movie_arg_error(app, inputs)
+    
+    # logger.debug(f"OK! rippy init 'Fear' -r raised ValueError")
+    #
+    # with pytest.raises(ValueError):
+    #     init(search=True)  # Cannot search without a title or -r flag
+    #
+    # logger.debug(f"OK! rippy init (no args) raised ValueError")
+    #
+    # with pytest.raises(ValueError):
+    #     init()  # no inputs
+    #
+    # logger.debug(f"OK! rippy init -s raised ValueError")
+    #
+    # with pytest.raises(ValueError):
+    #     init("foo", "Fear", search=True)
 
-    logger.debug(f"OK! rippy init (no args) raised ValueError")
+def assert_movie_arg_error(app, inputs: List[str]):
+    
+    runner = CliRunner()
+    result = runner.invoke(app, inputs)
+    assert result.exit_code == 1
+    logger.debug(result) 
 
-    with pytest.raises(ValueError):
-        init()  # no inputs
-
-    logger.debug(f"OK! rippy init -s raised ValueError")
