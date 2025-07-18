@@ -13,9 +13,9 @@ uv run pytest
 - `cli`: run tests for cli.
 - `core`: run tests for core library.
 
-``` sh 
 Example:
 
+``` sh 
 uv run pytest -m cli
 ```
 
