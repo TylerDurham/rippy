@@ -11,6 +11,8 @@ import rippy.core.defaults as d
 
 logger = logging.getLogger(__name__)
 
+# Default values
+defaults = d.get_defaults()
 
 @pytest.fixture
 def my_temp_dir():
@@ -25,8 +27,6 @@ def my_temp_dir():
 def test_write_config(my_temp_dir):
     """Tests the serialization and deserialization of config files."""
 
-    # Default values
-    defaults = d.get_defaults()
 
     # Create a config instance with default values
     expected = cfg.RippyConfig()
@@ -70,3 +70,18 @@ def assert_are_equal(expected: cfg.RippyConfig, actual: cfg.RippyConfig):
         expected.makemkv.tv_show_min_title_length
         == actual.makemkv.tv_show_min_title_length
     )
+
+def test_write_config_fail_no_overwrite(my_temp_dir):
+
+    """ Tests that write_file won't overrite an existing file UNLESS you specify overwrite = True. """
+    
+    # Create a file path to a location in /tmp
+    path_to_config_file = os.path.join(my_temp_dir, defaults.CONFIG_FILE)
+
+    # Write first to make sure the file exists in the temp directory
+    cfg.write_config(cfg.RippyConfig(), path_to_config_file=path_to_config_file)
+
+    with pytest.raises(FileExistsError):
+        cfg.write_config(cfg.RippyConfig(), path_to_config_file=path_to_config_file)
+
+    logger.info(f"OK: Not specifiying `overwrite` = True raised error of type `FileExistsError`!")
