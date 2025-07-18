@@ -5,7 +5,7 @@ from typing import List
 
 import pytest
 
-from rippy.commands.init import app
+from rippy.commands.init import app as cmd_init
 
 from typer.testing import CliRunner
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def test_movie():
 
     runner = CliRunner()
-    actual = runner.invoke(app, ["movie", "Fear", "--search"])
+    actual = runner.invoke(cmd_init, ["movie", "Fear", "--search"])
     assert actual.exit_code == 0, f"Expected {actual.exit_code} to be 0!"
 
 
@@ -28,7 +28,7 @@ def test_movie_arg_errors():
     runner = CliRunner()
 
     inputs = ["movie", "Fear", "--read"]
-    assert_movie_arg_error(app, inputs)
+    assert_movie_arg_error(cmd_init, inputs)
     
     # logger.debug(f"OK! rippy init 'Fear' -r raised ValueError")
     #
