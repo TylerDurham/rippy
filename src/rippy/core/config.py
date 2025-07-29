@@ -75,6 +75,8 @@ def ensure_path(path_to_check: str) -> bool:
     """
     if not os.path.exists(path_to_check):
         os.makedirs(path_to_check)
+        cfg = RippyConfig()
+        write_config(cfg)
         return True
     else:
         return False

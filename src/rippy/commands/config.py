@@ -1,5 +1,7 @@
 from typing import Annotated, List
 
+from rippy.forms.config_form import ConfigForm
+
 import typer as t
 
 app = t.Typer()
@@ -8,6 +10,10 @@ app = t.Typer()
 def complete_section():
     return ["rippy", "rippy.movie", "rippy.tv-show"]
 
+@app.command("init") 
+def init():
+    cf = ConfigForm()
+    cf.run()
 
 @app.command("list")
 def list():

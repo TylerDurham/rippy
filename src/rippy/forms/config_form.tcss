@@ -1,0 +1,29 @@
+Screen {
+    layout: grid;
+    grid-size: 4;
+    grid-columns: 2fr 1fr 1fr;
+}
+
+.banner {
+    column-span: 4;
+    content-align-horizontal: center;
+    text-style: bold;
+  }
+
+.input {
+    column-span: 3;
+    margin: 1;
+  }
+
+.header {
+    column-span: 4;
+    text-style: bold;
+  }
+
+.label {
+    column-span: 1;
+  }
+
+.box {
+    height: 100%;
+}
