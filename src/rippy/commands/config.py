@@ -1,5 +1,7 @@
 from typing import Annotated, List
+from dataclasses import field, fields, asdict
 
+from rippy.core.config import MakeMKVSettings, RippySettings, read_config, write_config
 from rippy.forms.config_form import ConfigForm
 
 import typer as t
@@ -7,52 +9,59 @@ import typer as t
 app = t.Typer()
 
 
-def complete_section():
-    return ["rippy", "rippy.movie", "rippy.tv-show"]
+# def complete_section():
+#     return ["rippy", "rippy.movie", "rippy.tv-show"]
+#
+# @app.command("init") 
+# def init():
+#     cf = ConfigForm()
+#     cf.run()
+#
+# @app.command("list")
+# def list():
+#     pass
+#
 
-@app.command("init") 
-def init():
-    cf = ConfigForm()
-    cf.run()
-
-@app.command("list")
-def list():
-    pass
-
-
-OPT_SECTION = Annotated[
-    str,
-    t.Argument(
-        help="The section name of the property.", autocompletion=complete_section
-    ),
-]
 
 OPT_NAME = Annotated[str, t.Argument(help="The name of the property.")]
 
 OPT_VALUE = Annotated[str, t.Argument(help="The value of the property.")]
 
 
-@app.command("get")
+@app.command()
 def get(
-    section: Annotated[
-        str, t.Argument(help="{help tbd}", autocompletion=complete_section)
-    ] = "{default}",
-    name: Annotated[str, t.Argument(help="{help tbd}")] = "{default}",
+    name: str = t.Argument(None, help="{help tbd}"),
+    value: str = t.Argument(None, help="{help tbd}"),
+    all: bool = t.Option(False, "--all, -a", help="{help tbd}")
 ):
     """
     Gets the value for a config option.
     """
 
-    print(f"section: {section} name: {name}")
+    section = None
+    cfg = read_config()
+    core_props = [f.name for f in fields(cfg.core)]
+    makemkv_props = [f.name for f in fields(cfg.makemkv)]
 
+    if name in core_props:
+        section = cfg.core
+    if name in makemkv_props:
+        section = cfg.makemkv
+    
+    if all:
+        print("[core]")
+        for prop in core_props:
+            print(f" - {prop} = {getattr(cfg.core, prop)})")
 
-@app.command("set")
-def set(section: OPT_SECTION, name: OPT_NAME, value: OPT_VALUE):
-    """
-    Sets the value for a config option.
-    """
-    print(f"section: {section} name: {name} value: {value}")
+        print("[makemkv]")
+        for prop in makemkv_props:
+            print(f" - {prop} = {getattr(cfg.makemkv, prop)})")
 
+    if not name == None and not value == None:
+
+        if not section == None:
+            setattr(section, name, value)
+            write_config(cfg, overwrite=True)
 
 if __name__ == "__main__":
     app()

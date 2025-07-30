@@ -1,8 +1,9 @@
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Button, Label, Header, Footer, Input
+from textual.containers import Horizontal, Vertical
+from textual.events import Key
+from textual.widgets import Button, Label, Header, Footer, Input, Static
 from rippy.core.defaults import get_defaults
 from rippy.core.config import RippyConfig, read_config, write_config, ensure_path
 
@@ -17,20 +18,21 @@ class ConfigForm(App):
 
     # CSS_PATH="config_form.tcss"
 
-    BINDNGS = [
-        # Binding(key="q", action="quit", description="Quit the app.",),
-        # Binding(key="j", action="down", description="Navigate Down."),
-        # Binding(key="k", action="up", description="Navigate Up."),
-        # Binding(key="s", action="save_config()")
-        ("s", "save", "Save the config."),
-        ("q", "quit", "Quit the app.")
+    BINDINGS = [
+        (":w", "save", "Save the config."),
+        (":q", "quit", "Quit the app.")
     ]
     TITLE = "Rippy"
     SUB_TITLE = "Configuration Options."
 
     d = get_defaults()
 
-    def save_config(self):
+    def __init__(self):
+        super().__init__()
+        self.in_command_mode = False
+        self.command_buffer = ""
+
+    def action_save(self):
         cfg = RippyConfig()
 
         app_dir = self.query_one("#input_app_dir", Input)
@@ -50,7 +52,7 @@ class ConfigForm(App):
         else:
             cfg = read_config()
 
-        yield VerticalScroll(
+        yield Vertical(
 
             Header(),
             Label(BANNER, classes="banner"),
@@ -66,30 +68,57 @@ class ConfigForm(App):
             Input(id="tv_show_min_title_length", value=f"{cfg.makemkv.tv_show_min_title_length}"),
         )
         yield Horizontal(
-            Button("Save", id="btn_save", variant="primary"),
-            Button("Save & Quit", id="btn_save_and_quit", variant="primary"),
-            Button("Quit", id="btn_quit", variant="primary"),
-            Footer()
+                Label("NORMAL", id="lbl_command_status"),
+            Footer(
+            )
         )
 
     async def on_button_pressed(self, event: Button.Pressed):
 
 
         if event.button.id == "btn_save":
-            self.save_config()
+            self.action_save()
 
         if event.button.id == "btn_save_and_quit":
-            self.save_config()
+            self.action_save()
             await self.action_quit()
 
         if event.button.id == "btn_quit":
-            self.save_config()
             await self.action_quit()
     
 
-    async def on_key(self, event: events.Key):
-        if event.key == "q":
-            await self.action_quit()
+    async def on_key(self, event: Key):
+        key = event.key
+
+        if not self.in_command_mode and key == "colon":
+            self.in_command_mode = True
+            self.command_buffer = ":"
+            self.set_footer_text("CMD")
+            return
+
+        if self.in_command_mode:
+            if key == "enter":
+                self.in_command_mode = False
+                await self.process_command(self.command_buffer)
+
+            else:
+                self.command_buffer += key
+                self.set_footer_text(f"CMD {self.command_buffer}")
 
     def on_mount(self):
         self.theme = "catppuccin-mocha"
+        
+    async def process_command(self, command: str):
+        match command:
+            case ":q":
+                await self.action_quit()
+
+            case _:
+                self.set_footer_text(f"INVALID COMMAND: {self.command_buffer}")
+                self.in_command_mode = False
+                self.command_buffer = ""
+
+
+    def set_footer_text(self, text: str):
+        lbl_status = self.query_one("#lbl_command_status", Label)
+        lbl_status.update(text)
