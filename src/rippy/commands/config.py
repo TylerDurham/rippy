@@ -1,71 +1,78 @@
-from dataclasses import asdict, field, fields
-from typing import Annotated, List
-
+from typing import Annotated
+from rippy.core.defaults import get_defaults
+from rippy.core.config import RippyConfig
 import typer as t
 
-from rippy.core.config import MakeMKVSettings, RippySettings, read_config, write_config
-from rippy.forms.config_form import ConfigForm
+DEFAULTS = get_defaults()
 
-app = t.Typer()
+app = t.Typer(name="config")
 
-
-# def complete_section():
-#     return ["rippy", "rippy.movie", "rippy.tv-show"]
-#
-# @app.command("init")
-# def init():
-#     cf = ConfigForm()
-#     cf.run()
-#
-# @app.command("list")
-# def list():
-#     pass
-#
+OPT_NAME = Annotated[str, t.Argument(
+    help="The name of the property to get or set.")]
+OPT_VALUE = Annotated[str, t.Argument(
+    help="The value of the property to set.")]
+OPT_PATH = Annotated[str, t.Option(
+    "--config-file", "-c", help="Specify the path to the config file. The default location is recommended for production.")]
 
 
-OPT_NAME = Annotated[str, t.Argument(help="The name of the property.")]
-
-OPT_VALUE = Annotated[str, t.Argument(help="The value of the property.")]
-
-
-@app.command()
-def get(
-    name: str = t.Argument(None, help="{help tbd}"),
-    value: str = t.Argument(None, help="{help tbd}"),
-    all: bool = t.Option(False, "--all, -a", help="{help tbd}"),
+@app.command(name="get")
+def get_value(
+    name: OPT_NAME,
+    config_file: OPT_PATH = DEFAULTS.CONFIG_FILE_PATH
 ):
     """
     Gets the value for a config option.
     """
 
-    section = None
-    cfg = read_config()
-    core_props = [f.name for f in fields(cfg.core)]
-    makemkv_props = [f.name for f in fields(cfg.makemkv)]
+    key = name.replace("-", "_")
+    cfg = RippyConfig.read(config_file, ensure_path=True)
+    print(f"{getattr(cfg, key)}")
 
-    if name in core_props:
-        section = cfg.core
-    if name in makemkv_props:
-        section = cfg.makemkv
 
-    if all:
-        print("[core]")
-        for prop in core_props:
-            print(f" - {prop} = {getattr(cfg.core, prop)})")
+@app.command(name="set")
+def set_value(
+    name: OPT_NAME,
+    value: OPT_VALUE,
+    config_file: OPT_PATH = DEFAULTS.CONFIG_FILE_PATH
+):
+    """
+    Sets the value for a config option.
+    """
 
-        print("[makemkv]")
-        for prop in makemkv_props:
-            print(f" - {prop} = {getattr(cfg.makemkv, prop)})")
+    key = name.replace("-", "_")
+    cfg = RippyConfig.read(config_file, ensure_path=True)
+    # TODO: Ensure ints are supported!
+    setattr(cfg, key, value)
+    cfg.save(path_to_config_file=config_file, overwrite=True)
 
-    if not name == None and value == None:
-        print(f"{getattr(section, name)}")
-    if not name == None and not value == None:
-
-        if not section == None:
-            setattr(section, name, value)
-            write_config(cfg, overwrite=True)
-
-        write_config(cfg, overwrite=True)
+    # section = None
+    # cfg = read_config()
+    # core_props = [f.name for f in fields(cfg.core)]
+    # makemkv_props = [f.name for f in fields(cfg.makemkv)]
+    #
+    # if name in core_props:
+    #     section = cfg.core
+    # if name in makemkv_props:
+    #     section = cfg.makemkv
+    #
+    # if all:
+    #     print("[core]")
+    #     for prop in core_props:
+    #         print(f" - {prop} = {getattr(cfg.core, prop)})")
+    #
+    #     print("[makemkv]")
+    #     for prop in makemkv_props:
+    #         print(f" - {prop} = {getattr(cfg.makemkv, prop)})")
+    #
+    # if not name == None and value == None:
+    #     print(f"{getattr(section, name)}")
+    # if not name == None and not value == None:
+    #
+    #     if not section == None:
+    #         setattr(section, name, value)
+    #         write_config(cfg, overwrite=True)
+    #
+    #     write_config(cfg, overwrite=True)
 
 
 if __name__ == "__main__":
