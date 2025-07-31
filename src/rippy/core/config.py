@@ -1,140 +1,57 @@
-import dataclasses as dc
-import os
-from pathlib import Path
+from pydantic import BaseModel, Field
 
-import tomlkit as tk
-
-from rippy.core.defaults import RippyDefaults as DEFAULTS
 from rippy.core.defaults import get_defaults
-
-#  = os.path.join(HOME_DIR, APP_NAME.capitalize()) # The root app directory.
-# IMPORT_DIR = os.path.join(RIP_DIR, "@import") # The path to where MKVs are imported.
-# MOVIES_DIR = os.path.join(RIP_DIR, "movies") # The path where movies are converted. presumably by Handbrake.
-# TV_SHOWS_DIR = os.path.join(RIP_DIR, "tv-shows") # The path where TV shows are converted, presumably by Handbrake
-
+import tomlkit as tk
+import os
 
 DEFAULTS = get_defaults()
 
+class RippyConfig(BaseModel):
 
-@dc.dataclass
-class RippySettings:
-    """
-    The root of the config data.
-    """
+    rip_dir: str = Field(default=DEFAULTS.APP_DIR, alias="rip-dir")
+    api_key: str = Field(default="", alias="api-key")
+    min_length_tv_episode: int = Field(default=DEFAULTS.TV_SHOW_MIN_TITLE_LENGTH, alias="min-length-tv-episode")
+    min_length_movie: int = Field(default=DEFAULTS.MOVIE_MIN_TITLE_LENGTH, alias="min-length-movie")
 
-    api_key: str = ""
-    rip_dir: str = DEFAULTS.APP_DIR
+    def save(self, overwrite: bool = False, path_to_config_file: str = DEFAULTS.CONFIG_FILE_PATH):
+        doc = tk.document()
+        for key, value in self.model_dump(by_alias=True).items():
+            doc[key] = value
 
+        # Does an existing config exist?
+        exists = os.path.exists(path_to_config_file)
 
-@dc.dataclass
-class MakeMKVSettings:
-    movie_min_title_length: int = DEFAULTS.MOVIE_MIN_TITLE_LENGTH
-    tv_show_min_title_length: int = DEFAULTS.TV_SHOW_MIN_TITLE_LENGTH
+        # Do not write if exists UNLESS overwrite is true
+        allow_write = (not exists) or (exists and overwrite)
 
+        if allow_write:
+            with open(path_to_config_file, "w") as f:
+                f.write(tk.dumps(doc)) 
 
-@dc.dataclass
-class RippyConfig:
-    """
-    Class the holds config data in memory. Will be written to disk as TOML.
-    """
-
-    core: RippySettings = dc.field(default_factory=RippySettings)
-    makemkv: MakeMKVSettings = dc.field(default_factory=MakeMKVSettings)
-
-    def has_api_key(self) -> bool:
-        if not self:
-            return len(self.core.api_key) > 0
         else:
-            return False
+            raise FileExistsError(path_to_config_file)
+
+    @staticmethod
+    def read(path_to_config_file: str = DEFAULTS.CONFIG_FILE_PATH) -> "RippyConfig":
+        # Read file into string
+        toml_str = ""
+        with open(path_to_config_file, "r") as f:
+            toml_str = f.read()
+
+        # Load toml dictionary
+        toml = tk.parse(toml_str) 
+
+        return RippyConfig.model_validate(toml)
 
 
-def _from_dict(cls, data: dict):
-    """Recursively populate dataclass from a dict."""
-    fieldtypes = {f.name: f.type for f in dc.fields(cls)}
-    return cls(
-        **{
-            key: (
-                _from_dict(fieldtypes[key], value)
-                if dc.is_dataclass(fieldtypes[key])
-                else value
-            )
-            for key, value in data.items()
-        }
-    )
+if __name__ == "__main__":
+    cfg = RippyConfig()
+
+    cfg.save(overwrite=True)
+
+    cfg = RippyConfig.read()
+    print(f"{cfg}")
 
 
-def ensure_path(path_to_check: str) -> bool:
-    """
-    Ensures the specified path exists. If it doesn't, the path is created.
-
-    Args:
-        path_to_check (str): The path to check.
-
-    Returns:
-        bool: True if the path was created, False otherwise.
-    """
-    if not os.path.exists(path_to_check):
-        os.makedirs(path_to_check)
-        cfg = RippyConfig()
-        write_config(cfg)
-        return True
-    else:
-        return False
 
 
-def read_config(path_to_config_file: str = DEFAULTS.CONFIG_FILE_PATH) -> RippyConfig:
-    """
-    Reads the configurtion from the configuration directory.
-
-    Args:
-        path_to_config_file (str): Opetional. The file to read.
-
-    Returns:
-        RippyConfig: A configuration object deserialized from the configuration file.
-    """
-
-    # Read file into string
-    toml_str = ""
-    with open(path_to_config_file, "r") as f:
-        toml_str = f.read()
-
-    # Load toml dictionary
-    toml = tk.loads(toml_str)
-
-    # Convert from toml dictionary to dataclass
-    return _from_dict(RippyConfig, toml)
-
-
-def write_config(
-    config: RippyConfig,
-    overwrite: bool = False,
-    path_to_config_file: str = DEFAULTS.CONFIG_FILE_PATH,
-):
-    """
-    Writes the configuration to the configuration directory.
-
-    Args:
-        config (RippyConfig): Object holding configuration data.
-        overwrite (bool): If the config file exists, overwrite.
-
-    """
-
-    # Does an existing config exist?
-    exists = os.path.exists(path_to_config_file)
-
-    # Do not write if exsists UNLESS overwrite is true
-    allow_write = (not exists) or (exists and overwrite)
-
-    if allow_write:
-        # Make sure the parent directory exists
-        parent = f"{Path(path_to_config_file).parent}"
-        ensure_path(parent)
-
-        # Convert dataclass to dictionary for serialization
-        dict = dc.asdict(config)
-
-        with open(path_to_config_file, "w") as f:
-            f.write(tk.dumps(dict))
-
-    else:
-        raise FileExistsError(path_to_config_file)
