@@ -1,5 +1,4 @@
 import typer as t
-
 from rippy.commands import config, init
 
 app = t.Typer()

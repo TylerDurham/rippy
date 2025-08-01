@@ -61,5 +61,22 @@ def test_config(my_temp_dir):
     assert cfg.api_key == api_key, f"Expected cfg.api_key to be {api_key}!"
     assert cfg.rip_dir == my_temp_dir, f"Expected cfg.rip_dir to be {
         my_temp_dir}!"
-    assert cfg.min_length_movie == min_length_movie, f"Expected cfg.min_length_movie to be {
+
+    # Checking and make sure value was properly deserialized
+    assert type(cfg.min_length_movie) == int, f"Exepcted cfg.min_length_movie to be of type 'int'!"
+
+    # Check and make sure values are equal
+    assert cfg.min_length_movie == int(min_length_movie), f"Expected cfg.min_length_movie to be {
         min_length_movie}!"
+
+
+def try_assert_set(name, value, path_to_config_file):
+    runner.invoke(app, [
+        "config",
+        "set",
+        name,
+        value,
+        "--config-file",
+        path_to_config_file
+    ])
+

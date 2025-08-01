@@ -16,6 +16,7 @@ class RippyConfig(BaseModel):
     min_length_movie: int = Field(
         default=DEFAULTS.MOVIE_MIN_TITLE_LENGTH, alias="min-length-movie")
 
+
     def save(
             self,
             overwrite: bool = False,
