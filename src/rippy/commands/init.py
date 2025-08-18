@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 from typing import Annotated
 
 import typer as t
@@ -7,6 +9,18 @@ import rippy.commands.errors as e
 
 app = t.Typer()
 
+def search_movies(title: str, api_key: string):
+    url = f'https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={title}&include_adult=false&language=en-US&page=1'
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    data = response.json()
+    return data['results']
 
 class InitType(str, Enum):
     movie = "movie"
@@ -44,6 +58,10 @@ def init(
     """
 
     check_inputs(title, read, search)
+
+    cfg = RippyConfig
+
+    results = search_movies(title, api_key)
 
     print(f"type: {type}")
     print(f"title: {title}")
