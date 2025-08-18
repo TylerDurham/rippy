@@ -1,26 +1,56 @@
 from enum import Enum
-
-
 from typing import Annotated
 
+import requests
 import typer as t
+import os
 
 import rippy.commands.errors as e
+from rippy.core.config import RippyConfig
 
 app = t.Typer()
 
-def search_movies(title: str, api_key: string):
-    url = f'https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={title}&include_adult=false&language=en-US&page=1'
+cfg = RippyConfig().read()
+API_KEY = cfg.api_key
+RIP_DIR = cfg.rip_dir
 
-    headers = {
-        "accept": "application/json",
-        "Authorization": f"Bearer {api_key}"
-    }
+def search_movies(title: str, api_key: str):
+    url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={title}&include_adult=false&language=en-US&page=1"
+
+    headers = {"accept": "application/json", "Authorization": f"Bearer {api_key}"}
 
     response = requests.get(url, headers=headers)
 
     data = response.json()
-    return data['results']
+    return data["results"]
+
+def select_movie(movies):
+    count = 0
+    for movie in movies:
+    
+        # id = movie['id']
+        title = movie['title']
+        year = movie['release_date'][:4]
+        description = movie["overview"]
+        print(f'{count}] {title} ({year}): {description}')
+        if count == 4: break
+        count = count + 1
+
+    selected_id = int(input("Enter the number of your selection: "))
+    return movies[selected_id]
+
+def make_dirs(title: str, year: int, id: str):
+    movie_dir_name = f'{title} ({year})'
+    
+
+    os.makedirs(os.path.join(RIP_DIR, "@imports", movie_dir_name))
+    os.makedirs(os.path.join(RIP_DIR, "movies", movie_dir_name))
+
+    with open(os.path.join(RIP_DIR, "movies", movie_dir_name, '.plexinfo'), 'w') as file:
+        file.write(f'Title: {movie_dir_name}\n')
+        file.write(f'Year: {year}\n')
+        file.write(f'tmdb: {id}')
+        file.close()
 
 class InitType(str, Enum):
     movie = "movie"
@@ -59,9 +89,18 @@ def init(
 
     check_inputs(title, read, search)
 
-    cfg = RippyConfig
+    cfg = RippyConfig.read()
+    
+    movies = search_movies(title, cfg.api_key) # movie.search(title)
+    selected = select_movie(movies)
+    print(selected)
 
-    results = search_movies(title, api_key)
+    title = selected['title']
+    safe_title = title.replace(":", "-")
+    movie_db_id = selected['id']
+    year = selected['release_date'][:4]
+
+    make_dirs(safe_title, year, movie_db_id)
 
     print(f"type: {type}")
     print(f"title: {title}")
